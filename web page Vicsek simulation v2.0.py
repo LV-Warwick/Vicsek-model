@@ -7,21 +7,26 @@ def vicsek(N, L, deltaT, Velocity, nsim, r, noise):
     x = np.random.uniform(0, L, N)
     y = np.random.uniform(0, L, N)   
     direction = np.random.uniform(-np.pi, np.pi, N)   
-                        
+    CmassVelocity = []                      
     p = 0
     while p < nsim:
         n=0
         updatedx = []
         updatedy = []
-                
-        while n < N:            
+        xvelocity = []
+        yvelocity = []          
+        while n < N:
+            xv = Velocity *np.cos(direction[n])            
             deltaX = deltaT * Velocity *np.cos(direction[n])
+            xvelocity = np.append(xvelocity, xv)
             newX = x[n] + deltaX
             if newX >= L:
                 newX=newX - L
             if newX < 0:
-                newX=newX + L           
-            deltaY = deltaT * Velocity *np.sin(direction[n])
+                newX=newX + L
+            yv = Velocity *np.sin(direction[n]) 
+            deltaY = deltaT * Velocity *np.sin(direction[n]) 
+            yvelocity = np.append(yvelocity, yv)
             newY = y[n] + deltaY
             if newY >= L:
                 newY = newY - L
@@ -38,8 +43,7 @@ def vicsek(N, L, deltaT, Velocity, nsim, r, noise):
             real=0                      
             AverageDirection=0
             while s < N:
-                distance = np.sqrt((x[s]-x[q])**2 + (y[s]-y[q])**2)       
-                                                           
+                distance = np.sqrt((x[s]-x[q])**2 + (y[s]-y[q])**2)                                                                  
                 if distance <= r:
                     real = real + np.cos(direction[s])                                                   
                     imaginary = imaginary + np.sin(direction[s])                                  
@@ -49,25 +53,28 @@ def vicsek(N, L, deltaT, Velocity, nsim, r, noise):
             q=q+1
         direction=updateddirection        
         x = updatedx
-        y = updatedy
-        p = p + 1
+        y = updatedy        
+        sumYvelocity = np.sum(xvelocity)
+        sumXvelocity = np.sum(yvelocity)
+        modvelocity = np.sqrt((sumYvelocity**2) + (sumXvelocity**2))
+        cmassvelocity = abs(modvelocity/(N*Velocity))
+        CmassVelocity = np.append(CmassVelocity, cmassvelocity)                
+        p = p + 1                                
     Xvelocity = []
-    Yvelocity = []
-    
+    Yvelocity = []    
     z = 0
     while z < N:
         X = Velocity*np.cos(direction[z])
         Y = Velocity*np.sin(direction[z])
         Xvelocity = np.append(Xvelocity, X)
         Yvelocity = np.append(Yvelocity, Y)
-        z = z + 1    
+        z = z + 1 
+    plt.figure()
     plt.quiver(x, y, Xvelocity, Yvelocity)
     plt.show
-            
-
-        
-
-            
-                
-                    
-                    
+    
+    plt.figure()
+    plt.plot(np.linspace(0, nsim*deltaT, nsim),CmassVelocity)
+    plt.xlabel('Time (s)')     
+    plt.ylabel('Order') 
+    plt.ylim(0,1)    
